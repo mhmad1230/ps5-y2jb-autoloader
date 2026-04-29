@@ -7,7 +7,7 @@
 
 const version_string = "Y2JB 1.3 by Gezine";
 
-const autoloader_version_string = "Autoloader v0.4 by PLK";
+const autoloader_version = "v0.5";
 
 
 
@@ -121,7 +121,166 @@ function trigger() {
 }
 
 (async function() {
+    const original_log = window.log || log;
+    window.log = async function(msg) {
+        if (typeof msg === 'string' && (msg.includes("[ERROR]") || msg.includes("[-]"))) {
+            if (typeof window.hideUI === 'function') window.hideUI();
+        }
+        if (typeof original_log === 'function') {
+            return await original_log(msg);
+        }
+    };
+
+    window.autoloader_ui = function() {
+        if (document.getElementById("autoloader_ui")) {
+            const existing_ui = document.getElementById("autoloader_ui");
+            existing_ui.parentNode.removeChild(existing_ui);
+        }
+
+        const autoloader_ui = document.createElement("div");
+        autoloader_ui.id = "autoloader_ui";
+        autoloader_ui.style.position = "fixed";
+        autoloader_ui.style.top = "0px";
+        autoloader_ui.style.left = "0px";
+        autoloader_ui.style.width = "100vw";
+        autoloader_ui.style.height = "100vh";
+        autoloader_ui.style.zIndex = "9999";
+        autoloader_ui.style.backgroundColor = "#272727";
+        autoloader_ui.style.border = "1px solid black";
+        autoloader_ui.style.padding = "5px";
+        autoloader_ui.style.fontFamily = "Arial, sans-serif";
+        autoloader_ui.style.fontSize = "8px";
+
+        const title = document.createElement("div");
+        title.textContent = "Y2JB Autoloader";
+        title.style.fontFamily = "monospace";
+        title.style.textAlign = "center";
+        title.style.fontWeight = "bold";
+        title.style.color = "#ccc";
+        title.style.padding = "10px";
+        title.style.borderRadius = "8px";
+        title.style.marginBottom = "5px";
+        title.style.fontSize = "42px";
+        title.style.marginTop = "60px";
+        autoloader_ui.appendChild(title);
+
+        const logWrapper = document.createElement("div");
+        logWrapper.style.width = "62%";
+        logWrapper.style.height = "62%";        
+        logWrapper.style.position = "relative";
+        logWrapper.style.margin = "20px auto 0 auto";
+        logWrapper.style.padding = "0px";
+        logWrapper.style.color = "#ccc";
+        logWrapper.style.backgroundColor = "#000";
+        logWrapper.style.fontFamily = "monospace";
+        logWrapper.style.fontSize = "28px";
+        logWrapper.style.overflow = "hidden";
+        logWrapper.style.border = "2px solid red";
+        logWrapper.style.borderRadius = "8px";
+        logWrapper.style.overflowY = "scroll";
+        logWrapper.id = "logWrapper";
+        autoloader_ui.appendChild(logWrapper);
+
+        const logContainer = document.createElement("div");
+        logContainer.id = "logContainer";
+        logContainer.style.position = "absolute";
+        logContainer.style.bottom = "0";
+        logContainer.style.padding = "10px";
+        logWrapper.appendChild(logContainer);
+
+        const progressBarContainer = document.createElement("div");
+        progressBarContainer.style.width = "60%";
+        progressBarContainer.style.height = "100px";
+        progressBarContainer.style.backgroundColor = "#202020";
+        progressBarContainer.style.border = "2px solid red";
+        progressBarContainer.style.borderRadius = "16px";
+        progressBarContainer.style.margin = "0 auto";
+        progressBarContainer.style.overflow = "hidden";
+        progressBarContainer.style.position = "relative";
+        progressBarContainer.style.marginTop = "30px";
+        autoloader_ui.appendChild(progressBarContainer);
+
+        const progressLabel = document.createElement("div");
+        progressLabel.id = "progressLabel";
+        progressLabel.textContent = "Loading...";
+        progressLabel.style.position = "absolute";
+        progressLabel.style.top = "50%";
+        progressLabel.style.left = "50%";
+        progressLabel.style.transform = "translate(-50%, -50%)";
+        progressLabel.style.color = "#fff";
+        progressLabel.style.fontSize = "42px";
+        progressLabel.style.fontWeight = "bold";
+        progressLabel.style.zIndex = "1";
+        progressBarContainer.appendChild(progressLabel);
+
+        const progressBar = document.createElement("div");
+        progressBar.id = "progressBar";
+        progressBar.style.width = "100%";
+        progressBar.style.height = "100%";
+        progressBar.style.backgroundColor = "#aa0000";
+        progressBar.style.transformOrigin = "left";
+        progressBar.style.transform = "scaleX(0)";
+        progressBar.style.transition = "transform 0.5s ease-in-out";
+        progressBarContainer.appendChild(progressBar);
+
+        document.body.appendChild(autoloader_ui);
+    };
+
+    window.updateProgress = function(percent, message="Loading...") {
+        const progressBar = document.getElementById("progressBar");
+        if (progressBar) {
+            progressBar.style.transform = 'scaleX(' + percent/100 + ')';
+        }
+        const progressLabel = document.getElementById("progressLabel");
+        if (progressLabel) {
+            progressLabel.textContent = message;
+        }
+        window.uiLog(message, "warning");
+    };
+
+    window.uiLog = function(message, type="info") {
+        if (typeof message === 'string' && (message.includes("[ERROR]") || message.includes("[-]"))) {
+            if (typeof window.hideUI === 'function') window.hideUI();
+        }
+        const logContainer = document.getElementById("logContainer");
+        if (logContainer) {
+            const logEntry = document.createElement("div");
+            if (type === "error") {
+                logEntry.style.color = "red";
+            } else if (type === "success") {
+                logEntry.style.color = "lightgreen";
+            } else if (type === "warning") {
+                logEntry.style.color = "yellow";
+            } else {
+                logEntry.style.color = "#ccc";
+            }
+            logEntry.textContent = message;
+            logContainer.appendChild(logEntry);
+            if (logContainer.childElementCount > 20) {
+                logContainer.removeChild(logContainer.firstChild);
+            }
+            const logWrapper = document.getElementById("logWrapper");
+            if (logWrapper) {
+                logWrapper.scrollTop = logWrapper.scrollHeight;
+            }
+        }
+    };
+
+    window.hideUI = function() {
+        if (document.getElementById("autoloader_ui")) {
+            const existing_ui = document.getElementById("autoloader_ui");
+            existing_ui.parentNode.removeChild(existing_ui);
+        }
+    };
+
     try {
+        if (typeof window.autoloader_ui === 'function') {
+            window.autoloader_ui();
+            window.uiLog("Autoloader " + autoloader_version + " by PLK", "success");
+            window.updateProgress(0, "Running userland exploit...");
+            window.uiLog("Y2JB by Gezine", "success");
+
+        }
         await log(version_string);
         await log('Starting Exploit');
         
@@ -876,12 +1035,33 @@ function trigger() {
         libc_error = libc_base + 0xCC5A0n;
         
         await load_localscript('misc.js');
+        
+        window.original_send_notification = window.send_notification;
+        window.send_notification = function(text) {
+            let isSystemNotify = false;
+            if (typeof text === 'string') {
+                const lowerText = text.toLowerCase();
+                if (lowerText.includes("[error]") || lowerText.includes("[-]") || 
+                    lowerText.includes("error") || lowerText.includes("failed") || 
+                    lowerText.includes("exception") || lowerText.includes("lapse") || 
+                    lowerText.includes("jailbroken") || lowerText.includes("exploit")) {
+                    isSystemNotify = true;
+                }
+            }
+            
+            if (isSystemNotify && typeof window.original_send_notification === 'function') {
+                window.original_send_notification(text);
+            }
+
+            if (typeof window.uiLog === 'function') {
+                window.uiLog(text, isSystemNotify ? "error" : "info");
+            }
+        };
+
         await checkLogServer();
         
         FW_VERSION = get_fwversion();
-        
-        send_notification(version_string + "\nFW : " + FW_VERSION);
-        send_notification("\n" + autoloader_version_string + "\n");
+        send_notification("FW: " + FW_VERSION);
 
         await log("FW detected : " + FW_VERSION);
         
@@ -917,18 +1097,31 @@ function trigger() {
         await load_localscript('update.js');
         await load_localscript('icon_update.js');
         await load_localscript('autoload.js');
+        if (typeof window.updateProgress === 'function') {
+            window.updateProgress(20, "Running kernel exploit...");
+        }
 
         await start_lapse();
+
+        if (typeof window.updateProgress === 'function') {
+            window.updateProgress(50, "Kernel exploit finished.");
+        }
+
         await start_update();
         await start_icon_update();
         await start_autoload();
 
-        send_notification("Autoload finished.\nClosing YT app");
-        kill_youtube();
+        if (typeof window.updateProgress === 'function') {
+            window.updateProgress(100, "Autoload finished.");
+        }
+        send_notification("Closing YT app");
+        await kill_youtube(500);
 
     } catch (e) {                
+        if (typeof window.hideUI === 'function') window.hideUI();
         await log('EXCEPTION: ' + e.message);
         await log(e.stack);
+        await kill_youtube();
     }
     
 })();

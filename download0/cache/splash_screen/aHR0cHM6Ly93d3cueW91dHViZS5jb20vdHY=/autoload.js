@@ -114,6 +114,9 @@ async function start_autoload() {
     static async loadFromFile(filepath) {
       if (!elf_loader_active) {
         await start_elf_loader();
+        if (typeof window.increment_autoload_progress === 'function') {
+            window.increment_autoload_progress("Starting ELF Loader...");
+        }
         await sleep(4000); // Give it time to start
         if (!elf_loader_active) {
           const msg = "[-] elf loader not active, cannot send elf";
@@ -246,6 +249,42 @@ async function start_autoload() {
     const configContent = read_file(autoLoadConfigPath);
     const lines = configContent.split('\n');
 
+    let num_payloads = 0;
+    let has_elfs = false;
+    
+    for (const line of lines) {
+      const trimmedLine = line.trim();
+      if (trimmedLine.length === 0 || trimmedLine.startsWith('#')) {
+        continue;
+      }
+      if (trimmedLine.startsWith('!')) {
+        // sleep
+      } else if (trimmedLine.startsWith('@')) {
+        // notification
+      } else if (trimmedLine === 'elfldr.elf') {
+        has_elfs = true;
+      } else if (trimmedLine.endsWith('.elf') || trimmedLine.endsWith('.bin')) {
+        num_payloads++;
+        has_elfs = true;
+      } else if (trimmedLine.endsWith('.js')) {
+        num_payloads++;
+      }
+    }
+    
+    window.autoload_steps_total = num_payloads + (has_elfs ? 1 : 0);
+    window.autoload_steps_done = 0;
+    
+    window.increment_autoload_progress = function(message) {
+        if (window.autoload_steps_total > 0) {
+            window.autoload_steps_done++;
+            let progress = 50 + (window.autoload_steps_done / window.autoload_steps_total) * 50;
+            if (progress > 100) progress = 100;
+            if (typeof window.updateProgress === 'function') {
+                window.updateProgress(progress, message);
+            }
+        }
+    };
+
     for (const line of lines) {
       const trimmedLine = line.trim();
 
@@ -276,6 +315,10 @@ async function start_autoload() {
         const fullPath = trimmedLine.startsWith('/') ? trimmedLine : configDir + trimmedLine;
         // using custom elfldr
         if (!elf_loader_active) {
+          if (typeof window.increment_autoload_progress === 'function') {
+              window.increment_autoload_progress("Starting ELF Loader...");
+          }
+          send_notification("Starting ELF Loader from: " + fullPath);
           await start_elf_loader(fullPath);
           await sleep(4000); // Give it time to start
           if (!elf_loader_active) {
@@ -291,6 +334,9 @@ async function start_autoload() {
           log("Loading ELF from: " + fullPath);
           send_notification("Loading ELF from: " + fullPath);
           await loadElf(fullPath);
+          if (typeof window.increment_autoload_progress === 'function') {
+              window.increment_autoload_progress("Loaded " + trimmedLine);
+          }
         } else {
           const errorMsg = "File not found: " + fullPath;
           log("[ERROR] " + errorMsg);
@@ -304,6 +350,9 @@ async function start_autoload() {
           try {
             const jsContent = read_file(fullPath);
             load_javascript_from_string(jsContent);
+            if (typeof window.increment_autoload_progress === 'function') {
+                window.increment_autoload_progress("Executed " + trimmedLine);
+            }
           } catch (e) {
             const errorMsg = "Failed to execute JS: " + fullPath;
             log("[ERROR] " + errorMsg + " - " + e.message);

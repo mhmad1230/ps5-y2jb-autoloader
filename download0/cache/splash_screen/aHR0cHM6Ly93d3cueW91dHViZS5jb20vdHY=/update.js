@@ -562,7 +562,9 @@ async function updateIcon() {
         log("No Y2JB update file found");
       } else {
         log("Starting Y2JB update from: " + updatePath);
-        send_notification("Starting Y2JB update...");
+        if (typeof window.updateProgress === 'function') {
+            window.updateProgress(50, "Updating Y2JB...");
+        }
         await process_update(updatePath);
 
           // Verify extracted update before renaming

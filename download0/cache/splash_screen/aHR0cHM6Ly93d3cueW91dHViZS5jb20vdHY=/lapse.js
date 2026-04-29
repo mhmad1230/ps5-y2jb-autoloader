@@ -1752,7 +1752,7 @@ async function start_lapse() {
             await log("Exploit failed - Reboot and try again");
             send_notification("Exploit failed - Reboot and try again");
 
-            kill_youtube();
+            await kill_youtube();
         }
         
         function rerun_check() {
@@ -1769,7 +1769,7 @@ async function start_lapse() {
                     await log("Already Jailbroken");
                     send_notification("Already Jailbroken");
 
-                    kill_youtube();
+                    await kill_youtube();
 
                     return;
                 }                
@@ -1788,13 +1788,15 @@ async function start_lapse() {
             await log("Restart your PS5 to run Lapse again");
             send_notification("Restart your PS5 to run Lapse again");
 
-            kill_youtube();
+            await kill_youtube();
 
             return;
         }
 
         await log(lapse_version);
-        send_notification(lapse_version);
+        if (typeof window.uiLog === 'function') {
+            window.uiLog(lapse_version);
+        }
         
         await log("Detected firmware : " + FW_VERSION);
         
@@ -1898,8 +1900,8 @@ async function start_lapse() {
             
             await cleanup();
             
-            await log("Lapse finished\nClosing Y2JB...");
-            send_notification("Lapse finished\nClosing Y2JB...");
+            //await log("Lapse finished\nClosing Y2JB...");
+            //send_notification("Lapse finished\nClosing Y2JB...");
             
         } catch (e) {
             await log("Lapse error: " + e.message);

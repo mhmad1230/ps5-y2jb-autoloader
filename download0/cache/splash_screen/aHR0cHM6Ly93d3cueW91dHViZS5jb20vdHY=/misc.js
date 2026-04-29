@@ -505,7 +505,8 @@ function get_dlsym_offset(fw_version) {
     return DLSYM_OFFSETS[closest.key];
 }
 
-function kill_youtube() {
+async function kill_youtube(delay_ms = 5000) {
+    await new Promise(resolve => setTimeout(resolve, delay_ms));
     const pid = syscall(SYSCALL.getpid);
     syscall(SYSCALL.kill, pid, SIGKILL);
 }

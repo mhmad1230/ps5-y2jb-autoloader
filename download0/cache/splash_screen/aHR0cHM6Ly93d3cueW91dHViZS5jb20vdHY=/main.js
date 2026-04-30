@@ -48,12 +48,16 @@ async function checkLogServer() {
     }
 }
 
+const baseWidth = 1920;
+const baseHeight = 1080;
+const scale = window.innerWidth / baseWidth;
+
 let outputElement = null;
 // hack for scrolling messages
 let maxLines = 56;
-const fontSize = Math.floor(window.innerHeight / maxLines * 0.85);
-const leftPadding = Math.floor(window.innerWidth * 0.005);
-const topPadding = Math.floor(window.innerHeight * 0.005);
+const fontSize = Math.floor((baseHeight / maxLines * 0.85) * scale);
+const leftPadding = Math.floor((baseWidth * 0.005) * scale);
+const topPadding = Math.floor((baseHeight * 0.005) * scale);
 
 async function log(msg) {
     let message = String(msg);
@@ -137,13 +141,19 @@ function trigger() {
             existing_ui.parentNode.removeChild(existing_ui);
         }
 
+        const baseWidth = 1920;
+        const baseHeight = 1080;
+        const scale = window.innerWidth / baseWidth;
+
         const autoloader_ui = document.createElement("div");
         autoloader_ui.id = "autoloader_ui";
         autoloader_ui.style.position = "fixed";
         autoloader_ui.style.top = "0px";
         autoloader_ui.style.left = "0px";
-        autoloader_ui.style.width = "100vw";
-        autoloader_ui.style.height = "100vh";
+        autoloader_ui.style.width = baseWidth + "px";
+        autoloader_ui.style.height = baseHeight + "px";
+        autoloader_ui.style.transform = "scale(" + scale + ")";
+        autoloader_ui.style.transformOrigin = "top left";
         autoloader_ui.style.zIndex = "9999";
         autoloader_ui.style.backgroundColor = "#272727";
         autoloader_ui.style.border = "1px solid black";

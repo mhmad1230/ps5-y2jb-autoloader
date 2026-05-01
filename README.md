@@ -6,6 +6,16 @@
 &nbsp;
 <p align="center">Automatically loads the kernel exploit, elf_loader, your elf payloads, and .js scripts.<br>Supports PS5 firmwares 4.03-10.01</p>
 
+<p align="center">
+    <b>Other Autoloaders:</b><br>
+    <a href="https://github.com/itsPLK/ps5-bdjb-autoloader">PS5 BD-JB Autoloader</a> | 
+    <a href="https://github.com/itsPLK/ps5-lua-autoloader">PS5 Lua Autoloader</a>
+</p>
+
+<p align="center">
+ <img src="./y2jb_screenshot.png" width="600" />
+</p>
+
 
 ## How to Use
 
@@ -14,7 +24,7 @@
   - In `autoload.txt`, list the files you want to load, one filename per line.
   - Filenames are case-sensitive — ensure each name exactly matches the file.
   - You can add lines like `!1000` to make the loader wait 1000 ms before sending the next payload.
-  - Do NOT include the kernel exploit (e.g., `lapse.js`) or the elf_loader in `autoload.txt`; they are loaded automatically.
+  - Do NOT include kernel exploit or elfldr in `autoload.txt`; they are loaded automatically.
 - Put the `ps5_autoloader` directory in one of these locations (priority order - highest first):
   - Root of a USB drive
   - Internal drive: `/data/ps5_autoloader`
@@ -56,19 +66,26 @@ this will allow you to have different autoload.txt files for each app
 <Details>
 <Summary><i>How to use custom ELF Loader version?</i></Summary>
 
-You can use custom ELF Loader by putting <code>elfldr.elf</code> (must be that filename!) in autoload directory and adding <code>elfldr.elf</code> line to autoload.txt <b>before any other ELF</b>.
+By default, the autoloader uses a custom version of **elfldr** that only accepts connections from the PS5 itself (localhost). This improves security by preventing other devices on your network from sending payloads to your console.
+
+If you want to use a "normal" ELF Loader that allows sending payloads from any device:
+1. Place your `elfldr.elf` in the `ps5_autoloader` directory.
+2. Add `elfldr.elf` as the **first** line in your `autoload.txt`.
 </Details>
 
 <Details>
 <Summary><i>etaHEN loading stability issues</i></Summary>
 
-Sometimes etaHEN will fail to load. It seems to be etaHEN/kstuff thing, and seems to affect mostly higher FW versions.  
-To improve stability, you can try disabling etaHEN toolbox automatic injecting, or loading etaHEN without kstuff and then loading kstuff separately.  
-You can also try minimizing the YT app (by holding PS button) before it loads etaHEN (after running lapse) - you can add some delay before loading etaHEN to have more time to minimize.
+Sometimes etaHEN will fail to load. It seems that etaHEN/kstuff often won't finish loading until the YouTube app is closed.
 
-If you are loading multiple ELFs, it's probably best if etaHEN / kstuff is the last payload you load.
+**Recommended Solution:**
+Since version **v0.5**, the autoloader includes **Payload Manager**. Using it is the most reliable way to load etaHEN/kstuff, as it waits for the YouTube app to close before sending the payloads. To use it, make `pldmgr.elf` the **only** item in your `autoload.txt`.
 
-Some users are reporting that adding a slight delay before loading etaHEN improves stability, but it's most likely just a placebo.
+**Alternative Workarounds:**
+- Disable etaHEN toolbox automatic injecting.
+- Load etaHEN without kstuff and then load kstuff separately.
+- Minimize the YT app (by holding the PS button) after running lapse but before etaHEN loads.
+- Add a delay before loading etaHEN to give yourself more time to minimize.
 </Details>
 
 
@@ -85,6 +102,13 @@ Some users are reporting that adding a slight delay before loading etaHEN improv
 * **[zecoxao](https://github.com/zecoxao), [idlesauce](https://github.com/idlesauce), and [TheFlow](https://github.com/theofficialflow)** - Helping troubleshoot dlsym
 * **[Dr.Yenyen](https://github.com/DrYenyen) and PS5 R&D community** - Testing Y2JB
 * **Rush** - Creating Y2JB backup file
+
+## License
+
+This project is licensed under the **GPL-3.0 License**.
+
+The original **Y2JB** base code remains under its original **MIT License** (see [LICENSE-MIT](LICENSE-MIT)).  
+All unique modifications and additions in this fork are licensed under **GPL-3.0**.
 
 ## Disclaimer
 
